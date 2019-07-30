@@ -34,30 +34,53 @@ vector<thread> g_threads;
 time_point<system_clock> g_benchmarkStartTime;
 #endif //APP_BENCHMARK
 
-#ifdef APP_BENCHMARK
-inline void startBenchmark() {
-	g_benchmarkStartTime = high_resolution_clock::now();
-}
-#endif //APP_BENCHMARK
+static void applyGrayscaleFilterOnImage(string imgFullPath);
+static Mat doSomething(Mat img);
+double convert3ChannelsInto1(int blue, int green, int red);
+inline void stopBenchmarkAndPrintResult();
+inline void startBenchmark();
 
-#ifdef APP_BENCHMARK
-inline void stopBenchmarkAndPrintResult() {
-	time_point<system_clock> end = high_resolution_clock::now();;
-	long long elapsed_microseconds = std::chrono::duration_cast<microseconds>(end - g_benchmarkStartTime).count();
-	cout << "===============================" << endl;
-	cout << "Benchmark total run time:  " << elapsed_microseconds << " (usec)" << endl;
-	cout << "===============================" << endl;
-}
-#endif //APP_BENCHMARK
 
-double convert3ChannelsInto1(int blue, int green, int red) {
-	static const double g_channelsFilters[BGR_IMG_NUM_OF_CHANNELS] = {
-		CHANNEL_FILTER_BLUE, CHANNEL_FILTER_GREEN, CHANNEL_FILTER_RED };
+int main() {
+	static const int EXIT_WITH_ERROR;
+	
+	startBenchmark();
+	
+	for (int i = 0; i < NUM_OF_IMGS; i++) {
+		string fullImgPathStr = IMGS_FOLDER_PATH + to_string(i) + IMGS_DEFAULT_FORMAT;
+#ifdef APP_DEBUG_MODE
+		cout << "image " << fullImgPathStr << endl;
+#endif //APP_DEBUG_MODE
+		g_threads.push_back(thread(applyGrayscaleFilterOnImage, fullImgPathStr));
+	}
 
-	return ((g_channelsFilters[BGR_CHANNEL_INDEX_BLUE] * blue)
-		+ (g_channelsFilters[BGR_CHANNEL_INDEX_GREEN] * green)
-		+ (g_channelsFilters[BGR_CHANNEL_INDEX_RED] * red));
+	for (int i = 0; i < NUM_OF_IMGS; i++) {
+		g_threads[i].join();
+	}
+	
+	stopBenchmarkAndPrintResult();
+
+	waitKey(0);
 }
+
+
+static void applyGrayscaleFilterOnImage(string imgFullPath) {
+	Mat img = imread(imgFullPath);
+	if (img.empty()) {
+		cout << "Error- Cannot load image!" << endl;
+		//TODO- handle error
+	}
+
+	cout << imgFullPath << " starts" << endl;
+	Mat filterdImg = doSomething(img);
+
+	imwrite(imgFullPath, filterdImg);
+#ifdef APP_DEBUG_MODE
+	imshow("Image", filterdImg);
+#endif //APP_DEBUG_MODE
+	cout << imgFullPath << " done" << endl;
+}
+
 
 static Mat doSomething(Mat img) {
 	int imgWidth = img.size().width;
@@ -70,7 +93,7 @@ static Mat doSomething(Mat img) {
 	if (img.channels() != BGR_IMG_NUM_OF_CHANNELS) {
 		cout << "Error - Image must be an RGB image!" << endl;
 	}
-	
+
 	Mat grayValuesMatrix = Mat(imgHeight, imgWidth, CV_64F);
 	Vec3b intensity;
 	uchar blue;
@@ -98,45 +121,30 @@ static Mat doSomething(Mat img) {
 	return grayValuesMatrix;
 }
 
-static void applyGrayscaleFilterOnImage(string imgFullPath) {
-	Mat img = imread(imgFullPath);
-	if (img.empty()) {
-		cout << "Error- Cannot load image!" << endl;
-		//TODO- handle error
-	}
 
-	cout << imgFullPath << " starts" << endl;
-	Mat filterdImg = doSomething(img);
-	
-	imwrite(imgFullPath, filterdImg);
-#ifdef APP_DEBUG_MODE
-	imshow("Image", filterdImg);
-#endif //APP_DEBUG_MODE
-	cout << imgFullPath << " done" << endl;
+double convert3ChannelsInto1(int blue, int green, int red) {
+	static const double channelsFilters[BGR_IMG_NUM_OF_CHANNELS] = {
+		CHANNEL_FILTER_BLUE, CHANNEL_FILTER_GREEN, CHANNEL_FILTER_RED};
+
+	return ((channelsFilters[BGR_CHANNEL_INDEX_BLUE] * blue)
+		+ (channelsFilters[BGR_CHANNEL_INDEX_GREEN] * green)
+		+ (channelsFilters[BGR_CHANNEL_INDEX_RED] * red));
 }
 
-int main() {
-	static const int EXIT_WITH_ERROR;
-	
-#ifdef APP_BENCHMARK
-	startBenchmark();
-#endif //APP_BENCHMARK
-	
-	for (int i = 0; i < NUM_OF_IMGS; i++) {
-		string fullImgPathStr = IMGS_FOLDER_PATH + to_string(i) + IMGS_DEFAULT_FORMAT;
-#ifdef APP_DEBUG_MODE
-		cout << "image " << fullImgPathStr << endl;
-#endif //APP_DEBUG_MODE
-		g_threads.push_back(thread(applyGrayscaleFilterOnImage, fullImgPathStr));
-	}
 
-	for (int i = 0; i < NUM_OF_IMGS; i++) {
-		g_threads[i].join();
-	}
-	
+inline void startBenchmark() {
 #ifdef APP_BENCHMARK
-	stopBenchmarkAndPrintResult();
+	g_benchmarkStartTime = high_resolution_clock::now();
 #endif //APP_BENCHMARK
+}
 
-	waitKey(0);
+
+inline void stopBenchmarkAndPrintResult() {
+#ifdef APP_BENCHMARK
+	time_point<system_clock> end = high_resolution_clock::now();;
+	long long elapsed_microseconds = std::chrono::duration_cast<microseconds>(end - g_benchmarkStartTime).count();
+	cout << "===============================" << endl;
+	cout << "Benchmark total run time:  " << elapsed_microseconds << " (usec)" << endl;
+	cout << "===============================" << endl;
+#endif //APP_BENCHMARK
 }
