@@ -7,7 +7,11 @@ using namespace std;
 
 //Note! Please comment out the define in order to run production mode.
 //debug mode consist additional logs and tests.
-#define DEBUG_MODE
+//#define DEBUG_MODE
+
+static const int NUM_OF_IMGS = 10;
+static const string IMGS_FOLDER_PATH = "c:/greenEyeImgs/";
+static const string IMGS_DEFAULT_FORMAT = ".jpg";
 
 static const int RGB_IMG_NUM_OF_CHANNELS = 3;
 static const int RGB_CHANNEL_INDEX_BLUE = 0;
@@ -17,6 +21,7 @@ static const double CHANNEL_FILTER_BLUE = 0.299;
 static const double CHANNEL_FILTER_GREEN = 0.587;
 static const double CHANNEL_FILTER_RED = 0.114;
 
+static vector<thread> g_threads;
 static const double g_channels_filters[RGB_IMG_NUM_OF_CHANNELS] = {CHANNEL_FILTER_BLUE, CHANNEL_FILTER_GREEN, CHANNEL_FILTER_RED};
 
 double convert3ChannelsInto1(int blue, int green, int red) {
@@ -54,7 +59,10 @@ static Mat doSomething(Mat img) {
 #endif //DEBUG_MODE
 
 			double grayVal = convert3ChannelsInto1((int)blue, (int)green, (int)red);
+
+#ifdef DEBUG_MODE
 			cout << grayVal << endl;
+#endif //DEBUG_MODE
 			grayValuesMatrix.at<double>(i, j) = grayVal;
 		}
 	}
@@ -83,9 +91,20 @@ int main() {
 	static const int EXIT_WITH_ERROR;
 	
 	cout << "LEGEN -waitforit- ..." << endl;
-	thread thread1(applyGrayscaleFilterOnImage, "c:/greenEyeImgs/img1.jpg");
-	thread1.join();
-	cout << "DARY!" << endl;
 	
+	for (int i = 0; i < NUM_OF_IMGS; i++) {
+		string fullImgPathStr = IMGS_FOLDER_PATH + to_string(i) + IMGS_DEFAULT_FORMAT;
+#ifdef DEBUG_MODE
+		cout << "image " << fullImgPathStr << endl;
+#endif //DEBUG_MODE
+		g_threads.push_back(thread(applyGrayscaleFilterOnImage, fullImgPathStr));
+	}
+
+	for (int i = 0; i < NUM_OF_IMGS; i++) {
+		g_threads[i].join();
+	}
+	
+	cout << "DARY!" << endl;
+
 	waitKey(0);
 }
