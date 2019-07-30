@@ -1,5 +1,6 @@
-#include "opencv2/highgui/highgui.hpp"
 #include <iostream>
+#include <thread>
+#include "opencv2/highgui/highgui.hpp"
 
 using namespace cv;
 using namespace std;
@@ -61,20 +62,30 @@ static Mat doSomething(Mat img) {
 	return grayValuesMatrix;
 }
 
-int main() {
-	static const int EXIT_WITH_ERROR;
-
-	Mat img = imread("c:/greenEyeImgs/img1.jpg");
+static void applyGrayscaleFilterOnImage(string imgFullPath) {
+	Mat img = imread(imgFullPath);
 	if (img.empty()) {
 		cout << "Error- Cannot load image!" << endl;
-		return EXIT_WITH_ERROR;
+		//TODO- handle error
 	}
 
+	cout << imgFullPath << " starts" << endl;
 	Mat filterdImg = doSomething(img);
-
-	imwrite("c:/greenEyeImgs/img1.jpg", filterdImg);
+	
+	imwrite(imgFullPath, filterdImg);
 #ifdef DEBUG_MODE
 	imshow("Image", filterdImg);
 #endif //DEBUG_MODE
+	cout << imgFullPath << " done" << endl;
+}
+
+int main() {
+	static const int EXIT_WITH_ERROR;
+	
+	cout << "LEGEN -waitforit- ..." << endl;
+	thread thread1(applyGrayscaleFilterOnImage, "c:/greenEyeImgs/img1.jpg");
+	thread1.join();
+	cout << "DARY!" << endl;
+	
 	waitKey(0);
 }
