@@ -3,6 +3,7 @@ ImgManipulation README
 =========================
 The app reads images from a folder, applies grayscale filter on them,
 and saves the results.
+The app process each image on a seperate thread.
 
 
 Development Environment
@@ -16,6 +17,10 @@ Development Environment
 
 Configure and run the app
 -------------------------
+>	App build configuration is currently DEBUG.
+	In addition, there is a DEBUG_MODE define in the code. When enabled, the app run additional debug code (mostly logs).
+	default is DEBUG_MODE disabled.
+
 >	The app reads the images from the default located in the project folder "./greenEyeImgs/".
 	in case you'd like to change the folder location, please change the path defined as IMGS_FOLDER_PATH (main.c). 
 	Note: the path should end with '/'.
@@ -34,7 +39,8 @@ Configure and run the app
 	to the same folder specified in IMGS_FOLDER_PATH (same input images folder)
 	with a prefix of "result_".
 	i.e. : the result for image named 0.jpg will be the correlated image named "result_0.jpg"
- 
+	
+>	The app has a benchmark feature defined by APP_BENCHMARK. The default is enabled. 
 
 
 
