@@ -15,8 +15,9 @@ using namespace std::chrono;
 #define APP_BENCHMARK
 
 static const int NUM_OF_IMGS = 10;
-static const string IMGS_FOLDER_PATH = "c:/greenEyeImgs/";
+static const string IMGS_FOLDER_PATH = "../greenEyeImgs/";
 static const string IMGS_DEFAULT_FORMAT = ".jpg";
+static const string IMG_RESULT_NAME_PREFIX = "result_";
 
 static const double CHANNEL_FILTER_BLUE = 0.299;
 static const double CHANNEL_FILTER_GREEN = 0.587;
@@ -34,7 +35,7 @@ vector<thread> g_threads;
 time_point<system_clock> g_benchmarkStartTime;
 #endif //APP_BENCHMARK
 
-static void applyGrayscaleFilterOnImage(string imgFullPath);
+static void applyGrayscaleFilterOnImage(string inputImgFullPath, string resultImgFullPath);
 static Mat doSomething(Mat img);
 double convert3ChannelsInto1(int blue, int green, int red);
 inline void stopBenchmarkAndPrintResult();
@@ -47,11 +48,12 @@ int main() {
 	startBenchmark();
 	
 	for (int i = 0; i < NUM_OF_IMGS; i++) {
-		string fullImgPathStr = IMGS_FOLDER_PATH + to_string(i) + IMGS_DEFAULT_FORMAT;
+		string inputImgPathStr = IMGS_FOLDER_PATH + to_string(i) + IMGS_DEFAULT_FORMAT;
+		string resultImgPathStr = IMGS_FOLDER_PATH + IMG_RESULT_NAME_PREFIX + to_string(i) + IMGS_DEFAULT_FORMAT;
 #ifdef APP_DEBUG_MODE
 		cout << "image " << fullImgPathStr << endl;
 #endif //APP_DEBUG_MODE
-		g_threads.push_back(thread(applyGrayscaleFilterOnImage, fullImgPathStr));
+		g_threads.push_back(thread(applyGrayscaleFilterOnImage, inputImgPathStr, resultImgPathStr));
 	}
 
 	for (int i = 0; i < NUM_OF_IMGS; i++) {
@@ -64,21 +66,21 @@ int main() {
 }
 
 
-static void applyGrayscaleFilterOnImage(string imgFullPath) {
-	Mat img = imread(imgFullPath);
+static void applyGrayscaleFilterOnImage(string inputImgFullPath, string resultImgFullPath) {
+	Mat img = imread(inputImgFullPath);
 	if (img.empty()) {
 		cout << "Error- Cannot load image!" << endl;
 		//TODO- handle error
 	}
 
-	cout << imgFullPath << " starts" << endl;
+	cout << inputImgFullPath << " starts" << endl;
 	Mat filterdImg = doSomething(img);
 
-	imwrite(imgFullPath, filterdImg);
+	imwrite(resultImgFullPath, filterdImg);
 #ifdef APP_DEBUG_MODE
 	imshow("Image", filterdImg);
 #endif //APP_DEBUG_MODE
-	cout << imgFullPath << " done" << endl;
+	cout << inputImgFullPath << " done" << endl;
 }
 
 
