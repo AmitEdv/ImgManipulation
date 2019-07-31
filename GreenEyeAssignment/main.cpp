@@ -69,8 +69,8 @@ int main() {
 static void applyGrayscaleFilterOnImage(string inputImgFullPath, string resultImgFullPath) {
 	Mat img = imread(inputImgFullPath);
 	if (img.empty()) {
-		cout << "Error- Cannot load image!" << endl;
-		//TODO- handle error
+		cout << "Error- Cannot load image " << inputImgFullPath << " !" << endl;
+		return;
 	}
 
 	cout << inputImgFullPath << " starts" << endl;
@@ -87,16 +87,17 @@ static void applyGrayscaleFilterOnImage(string inputImgFullPath, string resultIm
 static Mat doSomething(Mat img) {
 	int imgWidth = img.size().width;
 	int imgHeight = img.size().height;
+	Mat grayValuesMatrix = Mat(imgHeight, imgWidth, CV_64F);
 #ifdef APP_DEBUG_MODE
 	cout << "Dims : " << img.dims << endl;
 	cout << "Width : " << imgWidth << endl;
 	cout << "Height: " << imgHeight << endl;
 #endif //APP_DEBUG_MODE
 	if (img.channels() != BGR_IMG_NUM_OF_CHANNELS) {
-		cout << "Error - Image must be an RGB image!" << endl;
+		cout << "Warning - Image must have 3 channels!" << endl;
+		return grayValuesMatrix;
 	}
 
-	Mat grayValuesMatrix = Mat(imgHeight, imgWidth, CV_64F);
 	Vec3b intensity;
 	uchar blue;
 	uchar  green;

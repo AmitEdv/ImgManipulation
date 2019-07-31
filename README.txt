@@ -8,7 +8,10 @@ and saves the results.
 Development Environment
 -------------------------
 >	The app development and compilation is performed in Visual Studio 2013 IDE,
-	and OpenCV library, version: opencv-2.4.11
+>	The app uses OpenCV library, version: opencv-2.4.11
+	make sure the linker include path match the location of the library on your computer.
+	The following link details the library install and include process:
+	https://www.opencv-srf.com/2017/11/install-opencv-with-visual-studio.html
 
 
 Configure and run the app
